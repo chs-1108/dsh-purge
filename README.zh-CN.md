@@ -6,7 +6,7 @@
 
 <p align="center"><strong>DeepSeek Harness 本机安全评测与提示词清洗插件</strong></p>
 
-<p align="center"><strong>版本 1.2.0</strong></p>
+<p align="center"><strong>版本 1.2.1</strong></p>
 
 <p align="center">
   <a href="https://github.com/chs-1108/dsh-purge/stargazers"><img src="https://img.shields.io/github/stars/chs-1108/dsh-purge?logo=github&label=Stars" alt="GitHub stars"></a>
@@ -382,6 +382,16 @@ dsh-purge --uninstall
 
 **一直看不到 dsh-purge 按钮**
 插件装了但没启用。检查你实际在跑的那个 profile 里，`dsh-purge` 是否在 **`dsh.profile.bundles`** 数组里——只写在 `dependencies` 里只会把文件拷进 `node_modules`。见[方式四](#方式四--手工改-profile)。
+
+**`失败: 清洗没有写进全部宿主，已取消重启`**
+重启前置检查发现某个宿主的补丁标记没写上。**1.2.1 已修**：官方新版 `assemble` 多了一行 `requiredContexts`，补丁 #40 匹配不上，标记写不进去，闸门就一直不放行。升级后再点一次应用即可。重启前想先确认：
+
+```sh
+node scripts/verify-keep-inject.mjs   # 只读：#40 能不能匹配当前宿主
+node scripts/diagnose-hosts.mjs       # 逐宿主列出标记 + 待应用补丁
+```
+
+某条补丁在你这个宿主上是 `skipped` 时，重试也写不进去——1.2.1 不再因此拦重启，改成返回告警。
 
 **点过应用，重启后什么都没变**
 补丁是开机加载的。彻底退出宿主（桌面版从托盘退出，别只关窗口），重开，再点应用，然后开**新**对话。

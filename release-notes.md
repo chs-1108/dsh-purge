@@ -1,3 +1,44 @@
+# 1.2.1
+
+## 中文
+
+- 版本 **1.2.1**。修「点应用报 `清洗没有写进全部宿主，已取消重启`」。
+- **根因**：宿主 `dsh-system-prompt` 的 `assemble` 在 `if (completeSection === void 0 ...)` 和
+  `return { ... }` 之间新增了一行 `const requiredContexts = new Set(...)`，`contexts` 也从
+  `runtimeContextSuppressed ? [] : transformed.contexts` 改成按 `requiredContexts` 过滤。
+  补丁 #40 `COMPLETE_PROMPT_KEEP_INJECT` 的 6 个 pattern 因此全部落空 → `pattern_not_found`
+  → `[cfg] complete prompt keeps ...` 标记写不上 → `hostCleanMarkersPresent()` 恒为假
+  → 重启前置检查拒绝放行，而「应用」本身看起来是成功的。
+- **修复**：给 #40 增加第 7 个替换变体，按新版原文匹配，并保留官方的 `requiredContexts` 过滤
+  （只接管 `sections`，不改官方 contexts 语义）。替换幂等，二次应用为 `already`。
+- **修复**：重启前置检查不再用「标记缺失」一刀切拦重启。只有还能重试的补丁（`pending` /
+  `unmatched`）才拦；宿主这版原文对不上的补丁是 `skipped`，重试也写不进去，此时放行并返回
+  `warnings`，避免用户被永久卡在「应用失败 → 不能重启 → 补丁不生效」的死循环里。
+- **诊断**：新增 `scripts/verify-keep-inject.mjs`（只读，验证 #40 能否匹配当前宿主）和
+  `scripts/check-ensure-clean.mjs`（复现写盘 + 重启前置判定）、`scripts/diagnose-hosts.mjs`
+  （逐个宿主列出标记 / 待应用补丁）。
+
+## English
+
+- Version **1.2.1**. Fixes `清洗没有写进全部宿主，已取消重启` on Apply.
+- **Root cause**: the host's `dsh-system-prompt` `assemble` gained a
+  `const requiredContexts = new Set(...)` line between the `completeSection` early return and the
+  final `return`, and `contexts` switched from `runtimeContextSuppressed ? [] : transformed.contexts`
+  to a `requiredContexts` filter. All six patterns of patch #40 `COMPLETE_PROMPT_KEEP_INJECT` missed,
+  so the `[cfg] complete prompt keeps ...` marker was never written,
+  `hostCleanMarkersPresent()` stayed false, and the pre-restart gate refused — while Apply itself
+  looked successful.
+- **Fix**: added a seventh replacement variant for #40 that matches the new source and keeps the
+  official `requiredContexts` filtering (only `sections` is taken over). Idempotent; a second Apply
+  reports `already`.
+- **Fix**: the pre-restart gate no longer blocks on a missing marker alone. Only retryable patches
+  (`pending` / `unmatched`) block; patches that cannot match this host build are `skipped`, cannot be
+  written by retrying, and now pass through with `warnings` instead of trapping the user in an
+  Apply-fails → cannot-restart → patches-never-load loop.
+- **Diagnostics**: new `scripts/verify-keep-inject.mjs` (read-only, checks whether #40 matches the
+  current host), `scripts/check-ensure-clean.mjs` (replays the write + pre-restart decision), and
+  `scripts/diagnose-hosts.mjs` (per-host markers and pending patches).
+
 # 1.2.0
 
 ## 中文

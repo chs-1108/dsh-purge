@@ -6,7 +6,7 @@
 
 <p align="center"><strong>DeepSeek Harness local security-eval &amp; prompt-cleaning plugin</strong></p>
 
-<p align="center"><strong>Version 1.2.0</strong></p>
+<p align="center"><strong>Version 1.2.1</strong></p>
 
 <p align="center">
   <a href="https://github.com/chs-1108/dsh-purge/stargazers"><img src="https://img.shields.io/github/stars/chs-1108/dsh-purge?logo=github&label=Stars" alt="GitHub stars"></a>
@@ -382,6 +382,16 @@ You are on a host that removed `cwd` from its prompt-variable registry, with a p
 
 **The `dsh-purge` button never appears**
 The plugin is installed but not enabled. Check that `dsh-purge` is in the **`dsh.profile.bundles`** array of the profile you actually run — a `dependencies` entry alone only copies files into `node_modules`. See [Option 4](#option-4--manual-profile-edit).
+
+**`失败: 清洗没有写进全部宿主，已取消重启` / `cleaning was not written into every host, restart cancelled`**
+The pre-restart gate found a host whose patch marker was missing. Fixed in **1.2.1** for hosts where the `assemble` source gained a `requiredContexts` line — patch #40 could not match, so its marker was never written and the gate refused forever. Upgrade, then Apply again. To confirm before restarting:
+
+```sh
+node scripts/verify-keep-inject.mjs   # read-only: does #40 match this host build?
+node scripts/diagnose-hosts.mjs       # per-host markers + pending patches
+```
+
+If a patch is `skipped` on your build, retrying cannot write it — 1.2.1 no longer blocks the restart for that case and reports it as a warning instead.
 
 **Apply finishes but nothing changes**
 Patches load at boot. Quit the host completely (desktop: quit the tray, do not just close the window), reopen it, then Apply, then start a **new** chat.
