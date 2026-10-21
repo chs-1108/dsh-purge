@@ -1,3 +1,36 @@
+# 1.2.2
+
+## 中文
+
+- 版本 **1.2.2**。诊断工具补充，补丁逻辑不变。
+- **新增** `scripts/asar-read.mjs`：只读地从 `app.asar` 里取单个文件，不解包整份归档。
+  用来对照「插件改的副本」和「Electron 真正加载的原件」。
+- **新增** `scripts/asar-ls.mjs`：列出归档内某个目录的条目，`--count` 只输出数量。
+  和已解开目录比对，一眼看出解包是否完整（本机实测 306 = 306，差集为空）。
+- **新增** `scripts/verify-host-tree.mjs`：把补丁表里改过的每个宿主 JS 文件跑一遍
+  `node --check`，并且只把「原件能过、改后过不了」判为坏掉——避免把官方本来就
+  解析不了的写法算到补丁头上（本机实测 45 个文件，补丁引入的语法错误 0）。
+- **文档**：README 开发章节补上这一组只读自检命令。
+- 适用范围说明：解开的 `resources\app` 只有在 `app.asar` 被挪走后才会被 Electron 加载；
+  否则宿主仍从归档内启动，所有文件级补丁都处于未生效状态。`verify-host-tree.mjs`
+  和 `asar-ls.mjs` 就是用来确认这一步有没有真的完成的。
+
+## English
+
+- Version **1.2.2**. Diagnostics only; patch logic unchanged.
+- **New** `scripts/asar-read.mjs`: pull a single file out of `app.asar` without unpacking the
+  archive, so the copy the plugin edits can be compared against what Electron actually loads.
+- **New** `scripts/asar-ls.mjs`: list one directory inside the archive; `--count` prints the
+  entry count only. Diff it against the extracted directory to prove the unpack is complete
+  (306 = 306 locally, empty symmetric difference).
+- **New** `scripts/verify-host-tree.mjs`: runs `node --check` over every host JS file the patch
+  table touches, and only flags a file when the pristine copy parses and the patched one does
+  not (45 files checked locally, 0 syntax errors introduced).
+- **Docs**: the README development section now lists this read-only self-check set.
+- Scope note: the extracted `resources\app` is only loaded after `app.asar` is moved aside.
+  Until then the host boots from inside the archive and every file-level patch stays inert.
+  `verify-host-tree.mjs` and `asar-ls.mjs` exist to confirm whether that step actually happened.
+
 # 1.2.1
 
 ## 中文

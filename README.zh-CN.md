@@ -6,7 +6,7 @@
 
 <p align="center"><strong>DeepSeek Harness 本机安全评测与提示词清洗插件</strong></p>
 
-<p align="center"><strong>版本 1.2.1</strong></p>
+<p align="center"><strong>版本 1.2.2</strong></p>
 
 <p align="center">
   <a href="https://github.com/chs-1108/dsh-purge/stargazers"><img src="https://img.shields.io/github/stars/chs-1108/dsh-purge?logo=github&label=Stars" alt="GitHub stars"></a>
@@ -450,6 +450,19 @@ node scripts/simulate-upgrade.mjs
 
 # 验证没有未注册的提示词变量能漏到渲染器
 node scripts/verify-cwd-suffix.mjs [插件目录]
+
+# 补丁 #40 还能不能匹配当前宿主（只读）
+node scripts/verify-keep-inject.mjs [宿主 index.js]
+
+# 哪个宿主缺清洗标记、哪些补丁还待应用（只读）
+node scripts/diagnose-hosts.mjs
+
+# 不复现重启的前提下，空跑写盘 + 重启前置判定
+node scripts/check-ensure-clean.mjs
+
+# 被补丁改过的宿主文件是否都还能解析；解开目录与 app.asar 是否 1:1
+node scripts/verify-host-tree.mjs <app.asar> <resources/app>
+node scripts/asar-ls.mjs <app.asar> dsh/node_modules/@deepseek-ai --count
 
 # 重新构建侧栏 bundle
 node scripts/build-client.mjs

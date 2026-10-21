@@ -6,7 +6,7 @@
 
 <p align="center"><strong>DeepSeek Harness local security-eval &amp; prompt-cleaning plugin</strong></p>
 
-<p align="center"><strong>Version 1.2.1</strong></p>
+<p align="center"><strong>Version 1.2.2</strong></p>
 
 <p align="center">
   <a href="https://github.com/chs-1108/dsh-purge/stargazers"><img src="https://img.shields.io/github/stars/chs-1108/dsh-purge?logo=github&label=Stars" alt="GitHub stars"></a>
@@ -450,6 +450,19 @@ node scripts/simulate-upgrade.mjs
 
 # verify no unregistered prompt variable can reach the renderer
 node scripts/verify-cwd-suffix.mjs [plugin-dir]
+
+# does patch #40 still match this host build? (read-only)
+node scripts/verify-keep-inject.mjs [host-index.js]
+
+# which host is missing a clean marker, and which patches are pending (read-only)
+node scripts/diagnose-hosts.mjs
+
+# replay the write step + the pre-restart gate without restarting
+node scripts/check-ensure-clean.mjs
+
+# every patched host file parses, and the extracted tree matches app.asar 1:1
+node scripts/verify-host-tree.mjs <app.asar> <resources/app>
+node scripts/asar-ls.mjs <app.asar> dsh/node_modules/@deepseek-ai --count
 
 # rebuild the dock bundle
 node scripts/build-client.mjs
