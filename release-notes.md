@@ -1,3 +1,35 @@
+# 1.2.3
+
+## 中文
+
+- 版本 **1.2.3**。修 #77 `REWIND_DROP_SENT_ON_APPEND` 在新版 `dsh-client-ui-conversation` 上静默跳过。
+- **根因**：客户端 `append(record)` 里 `this.revised.clear();` 被官方改成了
+  `if (this.revised.size > 0) this.revised.clear();`。补丁走的是整段精确字符串匹配，
+  多这一个条件就 0 命中，状态落成 `skipped`——面板看不出来，「撤销上一轮」却不再把
+  已发送的消息从当前对话里拿掉。
+- **修复**：给 #77 增加第二个替换变体，按新原文匹配，并保留官方的条件式 `clear()`。
+  已核对宿主里 `isRewindMarker()`、`replaceWindow(entries, hasMore)`、`this.hasMore`
+  都还在，替换不会引入未定义引用。替换后 `node --check` 通过，二次应用为 `already`。
+- 至此该宿主上因官方改版而落空的补丁清零：`skipped` 只剩 #32 / #53（Web 面专用，
+  桌面端本来就不适用）和 #80（官方已不再注入那两行 tool-fs / tool-web，无可撤）。
+
+## English
+
+- Version **1.2.3**. Fixes #77 `REWIND_DROP_SENT_ON_APPEND` silently skipping on current
+  `dsh-client-ui-conversation`.
+- **Root cause**: the client's `append(record)` now guards the reset as
+  `if (this.revised.size > 0) this.revised.clear();` instead of an unconditional
+  `this.revised.clear();`. The patch is one exact-string match, so that extra condition made it
+  match nothing and settle as `skipped`. Invisible in the panel, but "undo last round" stopped
+  removing the already-sent message from the current conversation.
+- **Fix**: added a second replacement variant for #77 that matches the new source and keeps the
+  official guarded `clear()`. Verified that `isRewindMarker()`, `replaceWindow(entries, hasMore)`
+  and `this.hasMore` all still exist in the host bundle, so the replacement introduces no
+  undefined references. `node --check` passes; a second Apply reports `already`.
+- With this, no patch on this host is left unmatched by an upstream change: `skipped` is down to
+  #32 / #53 (web-surface only, not applicable to desktop) and #80 (the host no longer injects
+  those two tool-fs / tool-web lines, so there is nothing to undo).
+
 # 1.2.2
 
 ## 中文
